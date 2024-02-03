@@ -12,6 +12,19 @@ namespace Fury.ECS
         internal protected interface WithComponent<TComponent> where TComponent : struct { }
         public interface WithSystem<TSystem> where TSystem : ECSSystem, new() { }
 
+        internal readonly Component[] Components;
+        internal readonly Archetype[] Archetypes;
+
+        protected World()
+        {
+            var (components, archetypes) = Init();
+        }
+
+        protected abstract (
+            (Type, int)[] components,
+            (Type, int[])[] archetypes
+        ) Init();
+
         protected Entities<T> CreateEntities<T>() where T : struct
         {
             return null;

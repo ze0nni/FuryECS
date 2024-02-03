@@ -28,7 +28,7 @@ namespace Fury.ECS.Editor
                 {
                     foreach (var a in nestedType.GetCustomAttributesData()) {
                         if (a.AttributeType == typeof(World.ArchetypeAttribute)) {
-                            Archetypes.Add(new ArchetypeInfo(this, nestedType));
+                            Archetypes.Add(new ArchetypeInfo(this, Archetypes.Count, nestedType));
                         }
                     }
                 }
@@ -49,7 +49,7 @@ namespace Fury.ECS.Editor
             {
                 if (_componentsMap.TryGetValue(type, out var info))
                     return info;
-                info = new ComponentInfo(type);
+                info = new ComponentInfo(_componentsMap.Count, type);
                 _componentsMap.Add(type, info);
                 Components.Add(info);
                 return info;

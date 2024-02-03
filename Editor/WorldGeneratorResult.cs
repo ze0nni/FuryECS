@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Text;
 using static Fury.ECS.Editor.WorldGenerator;
 
@@ -98,7 +99,7 @@ namespace Fury.ECS.Editor
                 {
                     WL($"private readonly global::{s.FullName} Systems{s.Name};");
                 }
-                WL($"public {world.Name}()");
+                WL($"public {world.Name}() : base()");
                 using (Block())
                 {
                     foreach (var a in world.Archetypes)
@@ -109,6 +110,16 @@ namespace Fury.ECS.Editor
                     {
                         WL($"this.Systems{s.Name} = new global::{s.FullName}();");
                     }
+                }
+
+                WL("protected override ((System.Type, int)[] components, (System.Type, int[])[] archetypes) Init()");
+                using (Block())
+                {
+                    WL("return (");
+                    WL($"new (System.Type, int)[] {{ {string.Join(",", world.Components.Select(c => $"(typeof(global::{c.FullName}), {c.SizeOf})"))} }}");
+                    WL(",");
+                    WL($"new  (System.Type, int[])[] {{ { string.Join(",", world.Archetypes.Select( a => $"(typeof({a.Name}), new int[]{{ { string.Join(",", a.Components.Select(c => c.Id)) } }})")) } }}");
+                    WL(");");
                 }
 
                 ProcessSystem(world, "Setup", null, s => s.IsSetup);
