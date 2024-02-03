@@ -1,0 +1,23 @@
+{
+  "name": "com.pixelrebels.fury.ecs",
+  "author": "ze0nni",
+  "displayName": "FuryECS",
+  "description": "FuryECS -- Archetype based ECS for Unity3d",
+  "category": "Data management",
+  "version": "0.5.0",
+    "keywords": [
+        
+    ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ze0nni/FuryECS.git"
+  },
+  "type": "tool",
+  "dependencies": {
+  },
+  "author": {
+    "name": "Onni",
+    "email": "ze0nni@gmail.com",
+    "url": "https://pixel-rebels.com/"
+  }
+}

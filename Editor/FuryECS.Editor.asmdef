@@ -1,0 +1,18 @@
+{
+    "name": "FuryECS.Editor",
+    "rootNamespace": "Fury.ECS.Editor",
+    "references": [
+        "GUID:c2fc6a298b799b64f864ee518df070e7"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
