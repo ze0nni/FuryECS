@@ -4,6 +4,5 @@ namespace Fury.ECS
     {
         public readonly int Id;
         public readonly int Instance;
-        public readonly World World;
     }
 }

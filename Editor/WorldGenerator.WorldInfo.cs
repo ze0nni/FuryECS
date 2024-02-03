@@ -11,6 +11,7 @@ namespace Fury.ECS.Editor
 
             public readonly List<ComponentInfo> Components = new List<ComponentInfo>();
             public readonly List<ArchetypeInfo> Archetypes = new List<ArchetypeInfo>();
+            public readonly List<SystemInfo> Systems = new List<SystemInfo>();
 
             private readonly Dictionary<Type, ComponentInfo> _componentsMap = new Dictionary<Type, ComponentInfo>();
 
@@ -27,6 +28,17 @@ namespace Fury.ECS.Editor
                     foreach (var a in nestedType.GetCustomAttributesData()) {
                         if (a.AttributeType == typeof(World.ArchetypeAttribute)) {
                             Archetypes.Add(new ArchetypeInfo(this, nestedType));
+                        }
+                    }
+                }
+
+                foreach (var iType in type.GetInterfaces())
+                {
+                    if (iType.IsGenericType)
+                    {
+                        if (iType.GetGenericTypeDefinition() == typeof(World.WithSystem<>))
+                        {
+                            Systems.Add(new SystemInfo(iType.GetGenericArguments()[0]));
                         }
                     }
                 }

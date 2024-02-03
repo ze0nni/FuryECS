@@ -94,6 +94,10 @@ namespace Fury.ECS.Editor
                 {
                     WL($"public readonly Fury.ECS.Entities<{a.Name}> Entities{a.Name};");
                 }
+                foreach (var s in world.Systems)
+                {
+                    WL($"private readonly global::{s.FullName} Systems{s.Name};");
+                }
                 WL($"public {world.Name}()");
                 using (Block())
                 {
@@ -101,7 +105,17 @@ namespace Fury.ECS.Editor
                     {
                         WL($"this.Entities{a.Name} = CreateEntities<{a.Name}>();");
                     }
+                    foreach (var s in world.Systems)
+                    {
+                        WL($"this.Systems{s.Name} = new global::{s.FullName}();");
+                    }
                 }
+
+                ProcessSystem(world, "Setup", null, s => s.IsSetup);
+                ProcessSystem(world, "Cleanup", null, s => s.IsCleanup);
+                ProcessSystem(world, "Update", "float", s => s.IsUpdate);
+                ProcessSystem(world, "FixedUpdate", "float", s => s.IsFixedUpdate);
+
                 WL("//Archetypes");
                 foreach (var a in world.Archetypes)
                 {
@@ -122,6 +136,22 @@ namespace Fury.ECS.Editor
                 foreach (var c in archetype.Components)
                 {
                     WL($"public ref global::{c.FullName} {c.Name} {{ [MethodImpl(MethodImplOptions.AggressiveInlining)] get => ref _{c.Name}.Get(); }}");
+                }
+            }
+        }
+
+        void ProcessSystem(WorldInfo world, string methodName, string arg, Predicate<SystemInfo> predicate)
+        {
+            WL($"public sealed override void {methodName}({(arg == null ? "" : $"{arg} a")})");
+            using (Block())
+            {
+                WL($"base.{methodName}({(arg == null ? "" : "a")});");
+                foreach (var s in world.Systems)
+                {
+                    if (predicate(s))
+                    {
+                        WL($"this.Systems{s.Name}.{methodName}({(arg == null ? "" : "a")});");
+                    }
                 }
             }
         }
