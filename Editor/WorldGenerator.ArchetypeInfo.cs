@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using System.Reflection;
+using System.Linq;
 
 namespace Fury.ECS.Editor
 {
@@ -15,7 +15,7 @@ namespace Fury.ECS.Editor
             {
                 Name = type.Name;
 
-                foreach (var iType in type.GetInterfaces())
+                foreach (var iType in type.GetInterfaces().Reverse())
                 {
                     if (iType.IsGenericType)
                     {
