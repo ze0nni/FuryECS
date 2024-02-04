@@ -134,6 +134,7 @@ namespace Fury.ECS.Editor
                     }
                 }
 
+                WL("//Init");
                 WL("protected override sealed (System.Type, int)[] GetComponents()=> new (System.Type, int)[]");
                 using (Block(semicolon: true))
                 {
@@ -147,15 +148,34 @@ namespace Fury.ECS.Editor
                         => $"(typeof({a.Name}), new int[]{{ { string.Join(",", a.Components.Select(c => c.Id)) } }})");
                 }
 
-                ProcessSystem(world, "Setup", null, s => s.IsSetup);
-                ProcessSystem(world, "Cleanup", null, s => s.IsCleanup);
-                ProcessSystem(world, "Update", "float", s => s.IsUpdate);
-                ProcessSystem(world, "FixedUpdate", "float", s => s.IsFixedUpdate);
+                WL("//Systems");
+                ProcessSystemsRun(world);
+
 
                 WL("//Archetypes");
                 foreach (var a in world.Archetypes)
                 {
                     ProcessArchetype(a);
+                }
+            }
+        }
+
+        void ProcessSystemsRun(WorldInfo world)
+        {
+            foreach(var i  in world.Systems
+                    .SelectMany(s => s.Runners.Select(r => (System: s , Runner: r)))
+                    .GroupBy(x => x.Runner)
+                    .OrderBy(x => x.Key)
+                    .Select(x => (Runner: x.Key, Systems: x.Select(g => g.System).ToArray()))
+                )
+            {
+                WL($"public void Run{i.Runner.RunType.Name}({(i.Runner.ArgType == null ? "" : $"{i.Runner.ArgType} a")})");
+                using(Block())
+                {
+                    foreach (var s in i.Systems)
+                    {
+                        WL($"this.Systems{s.Name}.Run<{i.Runner.RunType.FullName.Replace("+", ".")}>({(i.Runner.ArgType == null ? "" : "a")});");
+                    }
                 }
             }
         }
