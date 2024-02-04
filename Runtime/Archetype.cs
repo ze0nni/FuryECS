@@ -1,20 +1,23 @@
+using System;
 using System.Linq;
 
 namespace Fury.ECS
 {
     internal unsafe readonly struct Archetype
     {
+        public readonly Type Type;
         public readonly int Id;
-        public readonly int Count;
-        public readonly int[] Component;
+        public readonly int ComponentsCount;
+        public readonly int[] Components;
         public readonly Components[] Buffers;
 
-        internal Archetype(int id, (int id, int size)[] components)
+        public Archetype(Type type, int id, Component[] components)
         {
+            Type = type;
             Id = id;
-            Count = components.Length;
-            Component = components.Select(x => x.id).ToArray();
-            Buffers = components.Select(x => new Components(x.size)).ToArray();
+            ComponentsCount = components.Length;
+            Components = components.Select(x => x.Id).ToArray();
+            Buffers = components.Select(x => new Components(x.Size)).ToArray();
         }
     }
 }

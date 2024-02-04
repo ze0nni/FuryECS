@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using static Fury.ECS.Editor.WorldGenerator;
@@ -49,10 +50,12 @@ namespace Fury.ECS.Editor
         {
             WorldGeneratorResult _g;
             bool _block;
-            public BlockScope(WorldGeneratorResult g, bool block)
+            bool _semicolon;
+            public BlockScope(WorldGeneratorResult g, bool block, bool semicolon)
             {
                 _g = g;
                 _block = block;
+                _semicolon = semicolon;
                 if (_block)
                     g?.WL("{");
                 g?.BeginIndent();
@@ -62,14 +65,33 @@ namespace Fury.ECS.Editor
             {
                 _g?.EndIndent();
                 if (_block)
-                    _g.WL("}");
+                    _g.WL(_semicolon ? "};" : "}");
                 _g = null;
             }
         }
 
-        BlockScope Block(bool condition = true, bool block = true)
+        BlockScope Block(bool condition = true, bool block = true, bool semicolon = false)
         {
-            return new BlockScope(condition ? this : null, block);
+            return new BlockScope(condition ? this : null, block, semicolon);
+        }
+
+        void Arguments(IEnumerable<string> arguments)
+        {
+            var array = arguments.ToArray();
+            var last = array.Length - 1;
+            for (var i = 0; i < array.Length; i++)
+            {
+                if (i == last)
+                    WL(array[i]);
+                else
+                    WL($"{array[i]},");
+            }
+        }
+
+        void Arguments<T>(IEnumerable<T> arguments, Func<int, T, string> map)
+        {
+            var i = 0;
+            Arguments(arguments.Select(x => map(i++, x)).ToArray());
         }
 
         void Process(WorldInfo world)
@@ -112,14 +134,17 @@ namespace Fury.ECS.Editor
                     }
                 }
 
-                WL("protected override ((System.Type, int)[] components, (System.Type, int[])[] archetypes) Init()");
-                using (Block())
+                WL("protected override sealed (System.Type, int)[] GetComponents()=> new (System.Type, int)[]");
+                using (Block(semicolon: true))
                 {
-                    WL("return (");
-                    WL($"new (System.Type, int)[] {{ {string.Join(",", world.Components.Select(c => $"(typeof(global::{c.FullName}), {c.SizeOf})"))} }}");
-                    WL(",");
-                    WL($"new  (System.Type, int[])[] {{ { string.Join(",", world.Archetypes.Select( a => $"(typeof({a.Name}), new int[]{{ { string.Join(",", a.Components.Select(c => c.Id)) } }})")) } }}");
-                    WL(");");
+                    Arguments(world.Components, (i, c) 
+                        => $"(typeof(global::{ c.FullName}), { c.SizeOf})");
+                }
+                WL("protected override sealed (System.Type, int[])[] GetArchetypes() => new (System.Type, int[])[]");
+                using (Block(semicolon: true))
+                {
+                    Arguments(world.Archetypes, (i, a) 
+                        => $"(typeof({a.Name}), new int[]{{ { string.Join(",", a.Components.Select(c => c.Id)) } }})");
                 }
 
                 ProcessSystem(world, "Setup", null, s => s.IsSetup);

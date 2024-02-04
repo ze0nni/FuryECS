@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Runtime.CompilerServices;
 
 [assembly:InternalsVisibleTo("FuryECS.Editor")]
@@ -17,14 +18,23 @@ namespace Fury.ECS
 
         protected World()
         {
-            var (components, archetypes) = Init();
+            var componentsCount = 0;
+            Components = GetComponents().Select(x => new Component(
+                x.Item1, 
+                componentsCount++, 
+                x.Item2))
+                .ToArray();
+            var archetypesCount = 0;
+            Archetypes = GetArchetypes().Select(x => new Archetype(
+                x.Item1, 
+                archetypesCount++, 
+                x.Item2.Select(i => Components[i]).ToArray()))
+                .ToArray();
         }
 
-        protected abstract (
-            (Type, int)[] components,
-            (Type, int[])[] archetypes
-        ) Init();
-
+        protected virtual (Type, int)[] GetComponents() => throw new NotImplementedException();
+        protected virtual (Type, int[])[] GetArchetypes() => throw new NotImplementedException();
+        
         protected Entities<T> CreateEntities<T>() where T : struct
         {
             return null;
